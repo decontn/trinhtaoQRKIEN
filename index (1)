@@ -1,0 +1,1870 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#b91c1c">
+  <title>Trình Tạo QR_KIEN</title>
+  
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
+
+  <style>
+    :root{--red:#b91c1c;--red-dark:#991b1b;--ink:#172033;--muted:#64748b;--line:#e2e8f0;--soft:#f8fafc;--white:#fff;--green:#15803d}
+    *{box-sizing:border-box}
+    body{margin:0;background:#f1f5f9;color:var(--ink);font:14px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    button,input,select{font:inherit}
+    button{cursor:pointer}
+    .topbar{background:linear-gradient(120deg,#991b1b,#dc2626);color:#fff;padding:22px max(20px,calc((100% - 1500px)/2));box-shadow:0 4px 16px #7f1d1d22}
+    .brand{display:flex;align-items:center;gap:14px}.logo{width:48px;height:48px;display:grid;place-items:center;border:1px solid #ffffff66;background:#ffffff18;border-radius:14px;font-size:26px}
+    h1{font-size:23px;line-height:1.2;margin:0 0 5px;letter-spacing:.2px}.subtitle{color:#fee2e2;margin:0;font-size:13px}
+    main{max-width:1500px;margin:22px auto;padding:0 20px 30px}
+    .toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+    .toolbar-left,.toolbar-right{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+    .btn{border:1px solid var(--line);background:#fff;color:var(--ink);padding:10px 14px;border-radius:10px;font-weight:650;display:inline-flex;align-items:center;gap:8px;justify-content:center;transition:.15s}
+    .btn:hover{border-color:#cbd5e1;background:#f8fafc}.btn.primary{background:var(--red);border-color:var(--red);color:#fff}.btn.primary:hover{background:var(--red-dark)}
+    .btn:disabled{opacity:.45;cursor:not-allowed}
+    .file-label{position:relative;overflow:hidden}.file-label input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%}
+    .status{font-size:12px;color:var(--muted)}
+    .stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:16px}
+    .stat{background:#fff;border:1px solid var(--line);border-radius:13px;padding:14px 16px;display:flex;align-items:center;gap:12px}
+    .stat-icon{width:40px;height:40px;display:grid;place-items:center;border-radius:11px;background:#fee2e2;color:var(--red);font-size:20px}
+    .stat strong{display:block;font-size:21px;line-height:1.2}.stat span{color:var(--muted);font-size:12px}
+    .workspace{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:16px;align-items:start}
+    .panel{background:#fff;border:1px solid var(--line);border-radius:15px;overflow:hidden;min-width:0}
+    .panel-head{padding:15px 17px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .panel-title{font-size:15px;font-weight:750;margin:0}.panel-desc{font-size:12px;color:var(--muted);margin:3px 0 0}
+    .table-tools{display:flex;gap:8px;flex-wrap:wrap;padding:12px 15px;border-bottom:1px solid var(--line);background:#fbfdff}
+    .search{flex:1;min-width:170px;position:relative}.search input{width:100%;padding:9px 12px 9px 35px;border:1px solid var(--line);border-radius:9px;outline:none;background:white}.search input:focus,select:focus{border-color:#f87171;box-shadow:0 0 0 3px #fee2e2}
+    .search span{position:absolute;left:12px;top:7px;color:var(--muted);font-size:16px}
+    select{max-width:220px;min-width:150px;padding:9px 10px;border:1px solid var(--line);border-radius:9px;background:white;color:var(--ink);outline:none}
+    .table-wrap{overflow:auto;max-height:64vh;min-height:300px}
+    table{border-collapse:separate;border-spacing:0;width:max-content;min-width:100%;font-size:13px}
+    th,td{padding:10px 13px;border-right:1px solid #edf1f5;border-bottom:1px solid #e8edf3;text-align:left;white-space:nowrap;max-width:300px;overflow:hidden;text-overflow:ellipsis}
+    th{position:sticky;top:0;background:#f8fafc;color:#475569;font-weight:750;z-index:1}
+    tbody tr{cursor:pointer}tbody tr:hover td{background:#fff7f7}tbody tr.selected td{background:#fff1f2}tbody tr.selected td:first-child{box-shadow:inset 3px 0 var(--red)}
+    .rownum{color:#94a3b8;text-align:right;background:#fafafa;min-width:46px}
+    .bill-cell{font-weight:750;color:#991b1b}
+    .empty{min-width:100%;padding:60px 20px;text-align:center;color:var(--muted)}.empty .emoji{font-size:36px;margin-bottom:10px}
+    .table-foot{padding:10px 15px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;color:var(--muted);font-size:12px}
+    .qr-panel{position:sticky;top:14px}
+    .qr-body{padding:18px;display:flex;flex-direction:column;align-items:center;text-align:center}
+    .qr-placeholder{width:210px;height:210px;border:1px dashed #cbd5e1;border-radius:15px;display:grid;place-items:center;color:#94a3b8;background:#fafafa;margin:4px 0 15px}
+   #qrCanvas{
+  width:210px;
+  height:210px;
+  display:none;
+  padding:9px;
+  background:#fff;
+  border:1px solid #e2e8f0;
+  border-radius:13px;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+}
+
+#qrCanvas canvas,
+#qrCanvas img{
+  display:block;
+  width:100% !important;
+  height:100% !important;
+  max-width:100%;
+  max-height:100%;
+  object-fit:contain;
+}
+    .selected-label{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-weight:750}
+    .bill-value{font-size:20px;font-weight:800;overflow-wrap:anywhere;margin:5px 0 2px}
+    .qr-note{font-size:12px;color:var(--muted);margin:0 0 15px}
+    .qr-actions{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:8px}.qr-actions .btn{padding:9px 8px;font-size:12px}
+    .detail{width:100%;text-align:left;border-top:1px solid var(--line);margin-top:18px;padding-top:13px}
+    .detail-row{display:flex;justify-content:space-between;gap:12px;padding:6px 0;font-size:12px}.detail-row span:first-child{color:var(--muted)}.detail-row span:last-child{font-weight:650;text-align:right;max-width:60%;overflow-wrap:anywhere}
+    .tip{margin-top:15px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;padding:12px 14px;border-radius:11px;font-size:12px}
+    .footer{text-align:center;color:#94a3b8;font-size:12px;padding:20px 0 0}
+    .toast{position:fixed;right:20px;bottom:20px;background:#172033;color:white;padding:12px 16px;border-radius:10px;box-shadow:0 10px 30px #0002;z-index:20;max-width:min(420px,calc(100vw - 40px));display:none}
+    @media(max-width:980px){.workspace{grid-template-columns:minmax(0,1fr) 280px}.qr-placeholder,#qrCanvas{width:180px;height:180px}}
+    @media(max-width:760px){main{padding:0 12px 22px;margin-top:14px}.topbar{padding:18px 15px}.workspace{grid-template-columns:1fr}.qr-panel{position:static;grid-row:1}.qr-body{padding:14px}.qr-placeholder,#qrCanvas{width:170px;height:170px}.stats{gap:8px}.stat{padding:11px}.stat strong{font-size:18px}.stat-icon{width:34px;height:34px}.table-wrap{max-height:55vh;min-height:220px}h1{font-size:20px}}
+    @media(max-width:420px){.stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.stat{padding:9px 7px;gap:6px;align-items:flex-start}.stat strong{font-size:16px}.stat span{font-size:10px;line-height:1.25;display:block}.stat-icon{display:none}.toolbar-left,.toolbar-right{width:100%}.toolbar-left .btn,.toolbar-right .btn{flex:1;min-width:0}.topbar{padding:16px 13px}.logo{width:42px;height:42px;font-size:23px}h1{font-size:19px}.subtitle{font-size:12px}}
+    @media(max-width:600px){
+      body{font-size:14px}
+      .toolbar{gap:8px}
+      .toolbar-left{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+      .toolbar-left .file-label{grid-column:1 / -1}
+      .btn{min-height:44px;padding:10px 11px;font-size:13px}
+      .file-label{width:100%}
+      .toolbar-right{padding:0 2px}
+      .stats{margin-bottom:10px}
+      .workspace{gap:12px}
+      .qr-panel{order:0}
+      .table-panel{order:1}
+      .panel{border-radius:12px}
+      .panel-head{padding:12px}
+      .panel-desc{font-size:11px}
+      .table-tools{padding:10px;display:grid;grid-template-columns:1fr;gap:8px}
+      .search{min-width:0;width:100%}
+      .search input,select{width:100%;max-width:none;min-height:44px}
+      .table-wrap{overflow:visible;max-height:none;min-height:0;padding:8px;background:#f8fafc}
+      table{width:100%;min-width:0;border-collapse:separate;border-spacing:0 8px;font-size:13px}
+      thead{display:none}
+      tbody{display:block;width:100%}
+      tbody tr{display:block;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;margin:0 0 8px;box-shadow:0 1px 2px #0f172a08}
+      tbody tr.selected{border:1.5px solid #f87171;box-shadow:0 0 0 2px #fee2e2}
+      tbody td{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;width:100%;max-width:none;white-space:normal;overflow-wrap:anywhere;text-overflow:clip;padding:9px 10px;border-right:0;border-bottom:1px solid #f1f5f9;text-align:right}
+      tbody td:last-child{border-bottom:0}
+      tbody td::before{content:attr(data-label);color:var(--muted);font-size:11px;font-weight:650;text-align:left;flex:0 0 36%;overflow-wrap:anywhere}
+      tbody td.rownum{display:none}
+      tbody td.bill-cell{font-size:14px;background:#fff7f7;color:var(--red-dark)}
+      tbody td.bill-cell::before{color:var(--red-dark)}
+      .empty{padding:35px 14px;min-width:0}
+      .table-foot{padding:10px;display:grid;gap:4px}
+      .qr-body{padding:14px}
+      .qr-placeholder,#qrCanvas{width:min(66vw,220px);height:min(66vw,220px)}
+      .bill-value{font-size:19px;max-width:100%}
+      .qr-actions{gap:8px}
+      .qr-actions .btn{font-size:12px;min-height:46px}
+      .detail{margin-top:14px}
+      .detail-row{font-size:12px;gap:8px}
+      .detail-row span:first-child{max-width:42%;overflow-wrap:anywhere}
+      .detail-row span:last-child{max-width:58%}
+      .tip{font-size:11px;padding:10px 12px}
+    }
+    @media print{body{background:#fff}.topbar,main>.toolbar,main>.stats,.table-panel,.tip,.footer,.panel-head,.qr-actions,.detail{display:none!important}main{margin:0;padding:0}.workspace{display:block}.qr-panel{position:static;border:0}.qr-body{padding:0}.qr-placeholder{display:none!important}#qrCanvas{display:block!important;width:260px;height:260px;border:0}.selected-label,.qr-note{color:#333}}
+  
+/* ===== INTRO BILL QR MANAGER ===== */
+#vpostIntro {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 24px;
+  color: #fff;
+  background:
+    radial-gradient(ellipse at 75% 30%, #ef4444 0%, transparent 38%),
+    linear-gradient(135deg, #450a0a 0%, #991b1b 48%, #dc2626 100%);
+  font-family: Inter, system-ui, sans-serif;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity .55s ease, visibility .55s ease;
+}
+
+#vpostIntro.intro-exit {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+#vpostIntro * {
+  box-sizing: border-box;
+}
+
+#vpostIntro .intro-content {
+  position: relative;
+  width: min(900px, 100%);
+  text-align: center;
+  z-index: 2;
+}
+
+#vpostIntro .intro-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 15px;
+  border: 1px solid #ffffff50;
+  border-radius: 999px;
+  background: #ffffff12;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  animation: vpFadeDown .7s both;
+}
+
+#vpostIntro .intro-brand-icon {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  background: #fff;
+  color: #b91c1c;
+  border-radius: 8px;
+  font-size: 19px;
+}
+
+#vpostIntro .intro-title {
+  margin: 25px 0 12px;
+  font-size: clamp(28px, 5vw, 51px);
+  line-height: 1.15;
+  font-weight: 900;
+  letter-spacing: -.8px;
+  color: #fff;
+  animation: vpFadeUp .8s .1s both;
+}
+
+#vpostIntro .intro-title span {
+  color: #fecaca;
+}
+
+#vpostIntro .intro-desc {
+  max-width: 600px;
+  margin: 0 auto;
+  color: #fee2e2;
+  font-size: clamp(14px, 2vw, 17px);
+  line-height: 1.8;
+  animation: vpFadeUp .8s .2s both;
+}
+
+#vpostIntro .intro-scene {
+  position: relative;
+  width: min(660px, 100%);
+  height: 230px;
+  margin: 22px auto 20px;
+  overflow: hidden;
+  border: 1px solid #ffffff30;
+  border-radius: 22px;
+  background: linear-gradient(180deg, #ffffff13, #450a0a20);
+  animation: vpFadeUp .8s .25s both;
+}
+
+#vpostIntro .intro-grid {
+  position: absolute;
+  inset: 0;
+  opacity: .16;
+  background-image:
+    linear-gradient(#fff 1px, transparent 1px),
+    linear-gradient(90deg, #fff 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+#vpostIntro .intro-road {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 25px;
+  height: 5px;
+  background: #ffffff65;
+}
+
+#vpostIntro .intro-road:after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    90deg, transparent 0 25px, #fff 25px 48px
+  );
+  animation: vpRoad 1s linear infinite;
+}
+
+
+/* ===== XE TẢI VIETTEL POST - CSS NÂNG CẤP ===== */
+
+
+/* ===== XE TẢI VIETTEL POST - PHIÊN BẢN NÂNG CẤP ===== */
+
+#vpostIntro .intro-truck {
+  position: absolute;
+  left: -260px;
+  bottom: 28px;
+  width: 250px;
+  height: 112px;
+  animation: vpTruck 5.2s .4s ease-in-out both;
+  filter: drop-shadow(0 6px 3px rgba(30,0,0,.28));
+}
+
+/* Bóng xe trên mặt đường */
+#vpostIntro .intro-truck::after {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  left: 12px;
+  bottom: 1px;
+  width: 226px;
+  height: 11px;
+  border-radius: 50%;
+  background: #25060666;
+  filter: blur(5px);
+}
+
+/* Thùng hàng đỏ */
+#vpostIntro .truck-body {
+  position: absolute;
+  z-index: 2;
+  left: 3px;
+  bottom: 25px;
+  width: 157px;
+  height: 67px;
+  overflow: visible;
+  border: 1px solid #a20c20;
+  border-radius: 2px 2px 1px 1px;
+  background:
+    linear-gradient(90deg,
+      #ffffff12 0%,
+      transparent 18%,
+      #a9001b18 100%),
+    linear-gradient(180deg,
+      #ff554b 0%,
+      #ed2635 35%,
+      #d71930 72%,
+      #b50e27 100%);
+  box-shadow:
+    inset 0 3px 0 #ffffff30,
+    inset 3px 0 5px #ffffff12,
+    inset -5px 0 6px #72091c35,
+    inset 0 -4px 0 #8f0b20;
+}
+
+/* Thanh kim loại trên nóc */
+#vpostIntro .truck-roof {
+  position: absolute;
+  left: -2px;
+  top: -5px;
+  width: calc(100% + 3px);
+  height: 5px;
+  border: 1px solid #aab2bb;
+  border-radius: 2px 2px 0 0;
+  background: linear-gradient(#ffffff, #c7cdd4 55%, #929ba5);
+  box-shadow: 0 1px 1px #55000b55;
+}
+
+/* Các đường gân dọc của thùng */
+#vpostIntro .truck-ribs {
+  position: absolute;
+  inset: 3px 5px 4px 4px;
+  opacity: .42;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0 18px,
+    #8b071a55 19px,
+    #ffffff18 20px,
+    transparent 22px
+  );
+  border-right: 2px solid #8d0b1c66;
+  pointer-events: none;
+}
+
+/* Sọc nhận diện màu trắng */
+#vpostIntro .truck-stripe {
+  position: absolute;
+  z-index: 2;
+  left: 0;
+  bottom: 8px;
+  width: 100%;
+  height: 8px;
+  background: linear-gradient(
+    180deg,
+    #ffffff 0%,
+    #f1f3f5 55%,
+    #cbd0d5 100%
+  );
+  clip-path: polygon(0 0, 100% 0, 96% 100%, 0 100%);
+  box-shadow: 0 1px 2px #68081855;
+}
+
+/* Logo */
+#vpostIntro .truck-logo {
+  position: absolute;
+  z-index: 4;
+  top: 22px;
+  left: 8px;
+  color: #fff;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: -.45px;
+  white-space: nowrap;
+  text-shadow:
+    0 1px 1px #750817,
+    1px 1px 2px #750817;
+}
+
+/* Đèn hậu */
+#vpostIntro .truck-rear-light {
+  position: absolute;
+  left: -3px;
+  bottom: 3px;
+  width: 4px;
+  height: 17px;
+  border: 1px solid #7f1020;
+  border-radius: 1px;
+  background: linear-gradient(90deg, #ffb0a7, #e31b32);
+  box-shadow: 1px 0 2px #51000b55;
+}
+
+/* Gầm xe */
+#vpostIntro .truck-chassis {
+  position: absolute;
+  z-index: 3;
+  left: 8px;
+  bottom: 21px;
+  width: 218px;
+  height: 8px;
+  border-radius: 1px;
+  background: linear-gradient(
+    180deg,
+    #525963,
+    #171b22 55%,
+    #080b10
+  );
+  box-shadow: 0 2px 1px #0005;
+}
+
+#vpostIntro .truck-chassis::before {
+  content: "";
+  position: absolute;
+  left: 35px;
+  top: -4px;
+  width: 113px;
+  height: 5px;
+  background: linear-gradient(#4c535d, #171b21);
+}
+
+/* Cabin */
+#vpostIntro .truck-cab {
+  position: absolute;
+  z-index: 4;
+  left: 158px;
+  bottom: 25px;
+  width: 76px;
+  height: 64px;
+  border: 1px solid #a40d21;
+  border-radius: 5px 13px 2px 2px;
+  background: linear-gradient(
+    100deg,
+    #ff5a4e 0%,
+    #f3333c 28%,
+    #df1c30 67%,
+    #b90d27 100%
+  );
+  box-shadow:
+    inset 3px 0 4px #ffffff20,
+    inset -5px 0 5px #7c071b35,
+    inset 0 -4px 0 #970b20;
+}
+
+/* Viền nóc cabin */
+#vpostIntro .truck-cab::before {
+  content: "";
+  position: absolute;
+  top: -4px;
+  left: 7px;
+  right: 3px;
+  height: 5px;
+  border: 1px solid #aeb6c0;
+  border-radius: 4px 10px 0 0;
+  background: linear-gradient(#fff, #d5dbe1 55%, #8e98a3);
+}
+
+/* Phần đầu xe bo tròn */
+#vpostIntro .truck-cab::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  right: -1px;
+  top: 25px;
+  width: 5px;
+  height: 30px;
+  border-radius: 2px 0 0 2px;
+  background: linear-gradient(90deg, #c8102e, #a70c22);
+}
+
+/* Mái che trên kính */
+#vpostIntro .truck-visor {
+  position: absolute;
+  z-index: 4;
+  top: 3px;
+  right: 3px;
+  width: 50px;
+  height: 5px;
+  border-radius: 2px 8px 0 0;
+  background: linear-gradient(#ff7869, #d91a30);
+}
+
+/* Kính chắn gió */
+#vpostIntro .truck-window {
+  position: absolute;
+  z-index: 5;
+  top: 8px;
+  right: 5px;
+  width: 47px;
+  height: 25px;
+  overflow: hidden;
+  border: 2px solid #e6ebef;
+  border-radius: 3px 9px 2px 3px;
+  background: linear-gradient(
+    130deg,
+    #d9f3ff 0%,
+    #a3d0e3 25%,
+    #608da7 65%,
+    #29495f 100%
+  );
+  box-shadow:
+    inset 0 0 0 1px #263d50,
+    inset 3px 2px 3px #ffffff70;
+}
+
+#vpostIntro .truck-window::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 27px;
+  width: 2px;
+  height: 100%;
+  background: #293f50aa;
+}
+
+#vpostIntro .truck-window::after {
+  content: "";
+  position: absolute;
+  top: -5px;
+  left: 7px;
+  width: 7px;
+  height: 40px;
+  background: #ffffff50;
+  transform: rotate(28deg);
+}
+
+/* Cửa cabin */
+#vpostIntro .truck-door {
+  position: absolute;
+  left: 8px;
+  top: 30px;
+  width: 35px;
+  height: 26px;
+  border-left: 1px solid #ffffff40;
+  border-right: 1px solid #8e0b1c70;
+  border-bottom: 1px solid #ffffff30;
+  border-radius: 1px 1px 3px 3px;
+  background: linear-gradient(90deg, #ffffff08, #8d0b1c10);
+}
+
+/* Tay nắm cửa */
+#vpostIntro .truck-door-handle {
+  position: absolute;
+  z-index: 5;
+  left: 14px;
+  top: 34px;
+  width: 9px;
+  height: 2px;
+  border-radius: 2px;
+  background: #e6c7c9;
+  box-shadow: 0 1px 1px #640716;
+}
+
+/* Bậc lên xuống */
+#vpostIntro .truck-step {
+  position: absolute;
+  left: 11px;
+  bottom: 1px;
+  width: 27px;
+  height: 4px;
+  border: 1px solid #454c56;
+  background: repeating-linear-gradient(
+    90deg,
+    #aeb5bd 0 3px,
+    #343a43 3px 5px
+  );
+}
+
+/* Gương chiếu hậu */
+#vpostIntro .truck-mirror {
+  position: absolute;
+  z-index: 7;
+  left: -5px;
+  top: 15px;
+  width: 10px;
+  height: 12px;
+  border: 1px solid #252b33;
+  border-radius: 2px;
+  background: linear-gradient(135deg, #eef7fc, #8299a9);
+  box-shadow: 1px 1px 2px #0005;
+}
+
+#vpostIntro .truck-mirror::after {
+  content: "";
+  position: absolute;
+  top: 9px;
+  left: 4px;
+  width: 2px;
+  height: 10px;
+  background: #303944;
+  transform: rotate(-10deg);
+}
+
+/* Đèn pha */
+#vpostIntro .truck-headlight {
+  position: absolute;
+  z-index: 6;
+  right: -1px;
+  bottom: 15px;
+  width: 7px;
+  height: 13px;
+  border: 1px solid #fef3c7;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #fff7d6, #fbbf24);
+  box-shadow: 0 0 5px #fde68a70;
+}
+
+/* Cản trước */
+#vpostIntro .truck-bumper {
+  position: absolute;
+  z-index: 5;
+  right: -3px;
+  bottom: -2px;
+  width: 20px;
+  height: 5px;
+  border: 1px solid #747b84;
+  border-radius: 1px 2px 2px 1px;
+  background: linear-gradient(#e2e5e9, #747d87 55%, #3c434d);
+}
+
+/* Bánh xe */
+#vpostIntro .truck-wheel {
+  position: absolute;
+  z-index: 6;
+  bottom: 5px;
+  width: 35px;
+  height: 35px;
+  box-sizing: border-box;
+  border: 3px solid #171b21;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    #e4e8ec 0 10%,
+    #9ca5af 12% 22%,
+    #525b66 24% 31%,
+    #20262e 33% 48%,
+    #080b10 50% 69%,
+    #454c55 71% 78%,
+    #11151b 80% 100%
+  );
+  box-shadow:
+    inset 0 0 0 1px #68717b,
+    0 1px 2px #0008;
+  animation: vpWheel .5s linear infinite;
+}
+
+/* Mâm bánh xe */
+#vpostIntro .wheel-hub {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  border: 2px solid #7c8792;
+  border-radius: 50%;
+  background: radial-gradient(circle, #e5e7eb, #8b949e 65%, #3d4650);
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 0 2px #242a32;
+}
+
+#vpostIntro .wheel-hub::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #343b44;
+  transform: translate(-50%, -50%);
+}
+
+#vpostIntro .wheel-one {
+  left: 24px;
+}
+
+#vpostIntro .wheel-two {
+  left: 181px;
+}
+
+/* Bánh quay khi xe di chuyển */
+@keyframes vpWheel {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+
+#vpostIntro .intro-parcel {
+  position: absolute;
+  bottom: 38px;
+  width: 40px;
+  height: 38px;
+  border: 2px solid #fef3c7;
+  border-radius: 4px;
+  background: #fbbf24;
+  box-shadow: inset 0 -5px #d97706;
+  animation: vpParcel 3.4s ease-in-out infinite;
+}
+
+#vpostIntro .intro-parcel:before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 15px;
+  width: 7px;
+  background: #fff1c0;
+}
+
+#vpostIntro .parcel-one {
+  right: 22%;
+  animation-delay: .2s;
+}
+
+#vpostIntro .parcel-two {
+  right: 12%;
+  width: 32px;
+  height: 30px;
+  animation-delay: .7s;
+}
+
+#vpostIntro .intro-scan {
+  position: absolute;
+  top: 28px;
+  right: 9%;
+  width: 94px;
+  height: 94px;
+  padding: 8px;
+  border: 2px solid #ffffff95;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 0 25px #fca5a555;
+  animation: vpScanBox 2s ease-in-out infinite;
+}
+
+#vpostIntro .intro-scan svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+#vpostIntro .intro-scan-line {
+  position: absolute;
+  left: 7px;
+  right: 7px;
+  top: 8px;
+  height: 3px;
+  border-radius: 3px;
+  background: #ef4444;
+  box-shadow: 0 0 12px #ef4444;
+  animation: vpScanLine 1.8s ease-in-out infinite alternate;
+}
+
+#vpostIntro .intro-features {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 18px 0 25px;
+  animation: vpFadeUp .8s .4s both;
+}
+
+#vpostIntro .intro-feature {
+  padding: 8px 13px;
+  border: 1px solid #ffffff35;
+  border-radius: 999px;
+  background: #ffffff10;
+  color: #fff;
+  font-size: 12px;
+}
+
+#vpostIntro .intro-actions {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  animation: vpFadeUp .8s .5s both;
+}
+
+#vpostIntro .intro-btn {
+  min-height: 49px;
+  padding: 13px 25px;
+  border: 1px solid #ffffff75;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform .2s, background .2s;
+}
+
+#vpostIntro .intro-btn:hover {
+  transform: translateY(-2px);
+}
+
+#vpostIntro .intro-btn-primary {
+  background: #fff;
+  color: #b91c1c;
+  box-shadow: 0 8px 24px #450a0a35;
+}
+
+#vpostIntro .intro-btn-skip {
+  color: #fff;
+  background: #ffffff10;
+}
+
+#vpostIntro .intro-footer {
+  margin-top: 23px;
+  color: #fecaca;
+  font-size: 11px;
+  letter-spacing: .6px;
+  animation: vpFadeUp .8s .6s both;
+}
+
+#vpostIntro .intro-orb {
+  position: absolute;
+  width: 280px;
+  height: 280px;
+  border: 1px solid #ffffff13;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+#vpostIntro .intro-orb-one {
+  top: -120px;
+  right: -100px;
+}
+
+#vpostIntro .intro-orb-two {
+  bottom: -180px;
+  left: -80px;
+  width: 400px;
+  height: 400px;
+}
+
+@keyframes vpFadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes vpFadeDown {
+  from { opacity: 0; transform: translateY(-14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+
+@keyframes vpTruck {
+  0% {
+    left: -260px;
+  }
+  35% {
+    left: 18%;
+  }
+  72% {
+    left: 18%;
+  }
+  100% {
+    left: calc(100% + 270px);
+  }
+}
+
+@keyframes vpWheel {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes vpRoad {
+  to { transform: translateX(-48px); }
+}
+
+@keyframes vpParcel {
+  0%, 100% { transform: translateY(0) rotate(0); }
+  50% { transform: translateY(-10px) rotate(3deg); }
+}
+
+@keyframes vpScanBox {
+  0%, 100% { box-shadow: 0 0 15px #fca5a533; }
+  50% { box-shadow: 0 0 32px #fecaca99; }
+}
+
+@keyframes vpScanLine {
+  from { top: 8px; }
+  to { top: 76px; }
+}
+
+@media (max-width: 600px) {
+  #vpostIntro { padding: 15px; }
+  #vpostIntro .intro-scene { height: 195px; }
+  #vpostIntro .intro-truck { transform: scale(.78); transform-origin: bottom left; }
+  #vpostIntro .intro-scan { width: 70px; height: 70px; right: 7%; top: 20px; }
+  #vpostIntro .intro-parcel { transform: scale(.8); }
+  #vpostIntro .intro-features { gap: 7px; margin-bottom: 19px; }
+  #vpostIntro .intro-feature { padding: 7px 9px; font-size: 11px; }
+  #vpostIntro .intro-btn { width: 100%; }
+  #vpostIntro .intro-title { margin-top: 20px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #vpostIntro *, #vpostIntro *:before, #vpostIntro *:after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
+
+  </style>
+</head>
+<body>
+  
+<!-- ===== INTRO VIETTEL POST / BILL QR MANAGER ===== -->
+<section id="vpostIntro" role="dialog" aria-modal="true"
+         aria-labelledby="vpostIntroTitle">
+  <div class="intro-orb intro-orb-one"></div>
+  <div class="intro-orb intro-orb-two"></div>
+
+  <div class="intro-content">
+    <div class="intro-brand">
+      <span class="intro-brand-icon">▦</span>
+      <span>TRÌNH TẠO QR</span>
+    </div>
+
+    <h2 class="intro-title" id="vpostIntroTitle">
+      TRÌNH TẠO QR_<span>KIEN</span>
+    </h2>
+
+    <p class="intro-desc">
+      Chào mừng bạn đến với công cụ hỗ trợ xử lý mã bill.
+      Quản lý danh sách, tạo mã QR và thao tác thuận tiện
+      trên cùng một giao diện.
+    </p>
+
+    <div class="intro-scene" aria-hidden="true">
+      <div class="intro-grid"></div>
+
+      <div class="intro-scan">
+        <svg viewBox="0 0 100 100" fill="none"
+             xmlns="http://www.w3.org/2000/svg">
+          <rect x="4" y="4" width="32" height="32" rx="2"
+                stroke="#991B1B" stroke-width="8"/>
+          <rect x="13" y="13" width="14" height="14"
+                fill="#991B1B"/>
+          <rect x="64" y="4" width="32" height="32" rx="2"
+                stroke="#991B1B" stroke-width="8"/>
+          <rect x="73" y="13" width="14" height="14"
+                fill="#991B1B"/>
+          <rect x="4" y="64" width="32" height="32" rx="2"
+                stroke="#991B1B" stroke-width="8"/>
+          <rect x="13" y="73" width="14" height="14"
+                fill="#991B1B"/>
+          <path d="M48 4H57V13H48zM48 20H57V36H48zM43 43H53V53H43zM64 48H74V58H64zM84 48H96V58H84zM48 64H58V74H48zM64 64H74V80H64zM82 68H96V78H82zM48 86H58V96H48zM76 86H96V96H76z"
+                fill="#991B1B"/>
+        </svg>
+        <div class="intro-scan-line"></div>
+      </div>
+
+      <div class="intro-parcel parcel-one"></div>
+      <div class="intro-parcel parcel-two"></div>
+
+      
+
+<div class="intro-truck">
+  <div class="truck-body">
+    <div class="truck-roof"></div>
+    <div class="truck-ribs"></div>
+    <div class="truck-stripe"></div>
+    <div class="truck-logo">VIETTEL POST</div>
+    <div class="truck-rear-light"></div>
+  </div>
+
+  <div class="truck-cab">
+    <div class="truck-visor"></div>
+    <div class="truck-window"></div>
+    <div class="truck-door"></div>
+    <div class="truck-door-handle"></div>
+    <div class="truck-step"></div>
+    <div class="truck-mirror"></div>
+    <div class="truck-headlight"></div>
+    <div class="truck-bumper"></div>
+  </div>
+
+  <div class="truck-chassis"></div>
+
+  <div class="truck-wheel wheel-one">
+    <div class="wheel-hub"></div>
+  </div>
+  <div class="truck-wheel wheel-two">
+    <div class="wheel-hub"></div>
+  </div>
+</div>
+
+
+
+      <div class="intro-road"></div>
+    </div>
+
+    <div class="intro-features">
+      <span class="intro-feature">▤ Quản lý bill</span>
+      <span class="intro-feature">▦ Tạo mã QR</span>
+      <span class="intro-feature">↕ Thao tác nhanh</span>
+    </div>
+
+    <div class="intro-actions">
+      <button class="intro-btn intro-btn-primary"
+              id="vpostIntroStart" type="button">
+        BẮT ĐẦU SỬ DỤNG&nbsp; →
+      </button>
+
+      <button class="intro-btn intro-btn-skip"
+              id="vpostIntroSkip" type="button">
+        Bỏ qua intro
+      </button>
+    </div>
+
+    <div class="intro-footer">
+      TẠO QR · NHANH CHÓNG · THUẬN TIỆN · HIỆU QUẢ
+    </div>
+  </div>
+</section>
+<!-- ===== END INTRO ===== -->
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo" aria-hidden="true">▦</div>
+      <div><h1>TẠO MÃ QR THEO FILE</h1><p class="subtitle">Đọc Excel · Tạo QR theo mã bill · Xử lý ngay trên trình duyệt</p></div>
+    </div>
+  </header>
+  <main>
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <label class="btn primary file-label">⇧ Tải file Excel<input id="fileInput" type="file" accept=".xlsx,.xls,.csv"></label>
+        <button class="btn" id="sampleBtn" type="button">▤ Dữ liệu mẫu</button>
+        <button class="btn" id="templateBtn" type="button">↓ Tải file mẫu Excel</button>
+        <button class="btn" id="clearBtn" type="button">✕ Xóa dữ liệu</button>
+      </div>
+      <div class="toolbar-right">
+        <span class="status" id="fileStatus">Chưa có file nào được tải lên</span>
+      </div>
+    </div>
+
+    <section class="stats" aria-label="Thống kê">
+      <div class="stat"><div class="stat-icon">▤</div><div><strong id="totalCount">0</strong><span>Tổng số dòng dữ liệu</span></div></div>
+      <div class="stat"><div class="stat-icon">▦</div><div><strong id="billCount">0</strong><span>Dòng có mã bill</span></div></div>
+      <div class="stat"><div class="stat-icon">⌕</div><div><strong id="visibleCount">0</strong><span>Dòng đang hiển thị</span></div></div>
+    </section>
+
+    <section class="workspace">
+      <section class="panel table-panel">
+        <div class="panel-head">
+          <div><h2 class="panel-title">Danh sách bill</h2><p class="panel-desc">Chọn một dòng để xem mã QR ở khung bên cạnh.</p></div>
+          <span class="status" id="columnStatus">Cột QR: chưa xác định</span>
+        </div>
+        <div class="table-tools">
+          <label class="search"><span>⌕</span><input id="searchInput" type="search" placeholder="Tìm mã bill hoặc nội dung..." disabled></label>
+          <select id="billColumn" aria-label="Chọn cột mã bill" disabled><option value="">Chọn cột mã bill</option></select>
+        </div>
+        <div class="table-wrap" id="tableWrap">
+          <div class="empty"><div class="emoji">▤</div><strong>Chưa có dữ liệu</strong><br>Hãy tải lên file Excel để bắt đầu tạo QR.</div>
+        </div>
+        <div class="table-foot"><span id="tableHint">Hỗ trợ .xlsx, .xls và .csv</span><span id="selectionHint">Chưa chọn dòng nào</span></div>
+      </section>
+
+      <aside class="panel qr-panel">
+        <div class="panel-head"><div><h2 class="panel-title">Mã QR bill</h2><p class="panel-desc">Nội dung QR chỉ là mã bill.</p></div></div>
+        <div class="qr-body">
+          <div class="qr-placeholder" id="qrPlaceholder"><div><div style="font-size:35px">▦</div><div style="font-size:12px">Chọn một bill để tạo QR</div></div></div>
+          <!--<canvas id="qrCanvas" width="420" height="420" aria-label="Mã QR của bill được chọn"></canvas>-->
+          <div id="qrCanvas" role="img" aria-label="Mã QR của bill được chọn"></div>
+          <div class="selected-label">Mã bill đang chọn</div>
+          <div class="bill-value" id="selectedBill">Chưa chọn</div>
+          <p class="qr-note" id="qrNote">Mã QR sẽ được tạo ngay khi bạn chọn một dòng có mã bill.</p>
+          <div class="qr-actions">
+            <button class="btn primary" id="downloadBtn" disabled>↓ Tải QR PNG</button>
+            <button class="btn" id="printBtn" disabled>▣ In QR</button>
+          </div>
+          <div class="detail" id="billDetails"><div class="detail-row"><span>Trạng thái</span><span>Chưa chọn bill</span></div></div>
+        </div>
+      </aside>
+    </section>
+
+    <div class="tip"><strong>Lưu ý bảo mật:</strong> File Excel được đọc và xử lý ngay trên trình duyệt, không được tải lên database của website. QR chỉ chứa đúng giá trị trong cột mã bill; hãy kiểm tra cột được chọn trước khi tải hoặc in.</div>
+    <div class="footer">An tâm chuyển giao · Tận tâm kết nối · An toàn</div>
+  </main>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<!-- Tải thư viện Excel và QR từ CDN chính, có dự phòng -->
+
+
+<script>
+  
+/* =========================
+   1. TẢI FILE EXCEL MẪU
+========================= */
+document.getElementById("templateBtn").addEventListener("click", () => {
+  if (!window.XLSX) {
+    toast("Thư viện Excel chưa tải xong. Vui lòng thử lại.");
+    return;
+  }
+
+  const data = [
+    ["Mã bill", "Tên người nhận", "Số điện thoại", "Địa chỉ", "Ghi chú"],
+    ["VTP123456789", "Nguyễn Văn A", "0900000001", "Hà Nội", "Mẫu thử 1"],
+    ["VTP987654321", "Trần Thị B", "0900000002", "TP. Hồ Chí Minh", "Mẫu thử 2"]
+  ];
+
+  const worksheet = XLSX.utils.aoa_to_sheet(data);
+  worksheet["!cols"] = [
+    { wch: 22 },
+    { wch: 24 },
+    { wch: 18 },
+    { wch: 32 },
+    { wch: 20 }
+  ];
+
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Danh sách bill");
+  XLSX.writeFile(workbook, "File_mau_bill.xlsx");
+
+  toast("Đã tạo file Excel mẫu.");
+});
+
+
+/* =========================
+   2. ĐIỀU KHIỂN BẰNG BÀN PHÍM
+========================= */
+(function () {
+  function loadLibrary(urls, checkLibrary, onReady, onFail) {
+    let index = 0;
+
+    function tryNext() {
+      if (checkLibrary()) {
+        onReady();
+        return;
+      }
+
+      if (index >= urls.length) {
+        onFail();
+        return;
+      }
+
+      const script = document.createElement("script");
+      script.src = urls[index++];
+      script.async = true;
+
+      script.onload = function () {
+        if (checkLibrary()) {
+          onReady();
+        } else {
+          script.remove();
+          tryNext();
+        }
+      };
+
+      script.onerror = function () {
+        script.remove();
+        tryNext();
+      };
+
+      document.head.appendChild(script);
+    }
+
+    tryNext();
+  }
+
+  loadLibrary(
+    [
+      "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js",
+      "https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"
+    ],
+    () => !!(window.XLSX && window.XLSX.read && window.XLSX.utils),
+    () => {
+      window.__xlsxReady = true;
+      document.dispatchEvent(new Event("xlsx-ready"));
+    },
+    () => {
+      window.__xlsxFailed = true;
+      document.dispatchEvent(new Event("libraries-failed"));
+    }
+  );
+
+  loadLibrary(
+    [
+      "https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js",
+      "https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"
+    ],
+    () => typeof window.QRCode === "function",
+    () => {
+      window.__qrReady = true;
+      document.dispatchEvent(new Event("qr-ready"));
+    },
+    () => {
+      window.__qrFailed = true;
+      document.dispatchEvent(new Event("libraries-failed"));
+    }
+  );
+})();
+
+document.addEventListener("keydown", function (event) {
+  // Bỏ qua phím điều hướng khi đang nhập liệu
+  const target = event.target;
+  const tag = target && target.tagName
+    ? target.tagName.toLowerCase()
+    : "";
+
+  if (
+    tag === "input" ||
+    tag === "textarea" ||
+    tag === "select" ||
+    (target && target.isContentEditable)
+  ) {
+    return;
+  }
+
+  // Lấy các dòng dữ liệu hiện đang hiển thị
+  const tableWrap = document.getElementById("tableWrap");
+  if (!tableWrap) return;
+
+  const rows = Array.from(
+    tableWrap.querySelectorAll("tbody tr")
+  ).filter(row =>
+    row.querySelectorAll("td").length > 0 &&
+    row.offsetParent !== null
+  );
+
+  if (!rows.length) return;
+
+  // Tìm dòng đang được chọn
+  let current = rows.findIndex(row =>
+    row.classList.contains("selected")
+  );
+
+  let next = current;
+
+  switch (event.key) {
+    case "ArrowDown":
+      next = current < 0 ? 0 : Math.min(current + 1, rows.length - 1);
+      break;
+
+    case "ArrowUp":
+      next = current < 0 ? 0 : Math.max(current - 1, 0);
+      break;
+
+    case "Home":
+      next = 0;
+      break;
+
+    case "End":
+      next = rows.length - 1;
+      break;
+
+    default:
+      return;
+  }
+
+  event.preventDefault();
+
+  // Kích hoạt chọn bill theo logic sẵn có của bảng
+  rows[next].click();
+
+  rows[next].scrollIntoView({
+    behavior: "auto",
+    block: "nearest"
+  });
+});
+
+</script>
+
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+
+  const state = {
+    headers: [],
+    rows: [],
+    sourceName: "",
+    billCol: -1,
+    selectedIndex: -1,
+    filtered: [],
+    qrRequestId: 0
+  };
+
+  const fileInput = $("fileInput");
+
+  function toast(message) {
+    const el = $("toast");
+    if (!el) return;
+
+    el.textContent = message;
+    el.style.display = "block";
+    clearTimeout(toast.timer);
+    toast.timer = setTimeout(() => {
+      el.style.display = "none";
+    }, 3400);
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? "").replace(/[&<>"']/g, c => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;"
+    }[c]));
+  }
+
+  function cellText(value) {
+    if (value === null || value === undefined) return "";
+    if (value instanceof Date) return value.toLocaleDateString("vi-VN");
+    return String(value).trim();
+  }
+
+  function findBillColumn(headers) {
+    const normalize = s => String(s)
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/đ/g, "d")
+      .replace(/[^a-z0-9]/g, "");
+
+    const preferred = [
+      "mabill", "mavandon", "mavd", "billcode", "bill",
+      "trackingnumber", "trackingcode", "barcode",
+      "mahanggui", "mabuugui"
+    ];
+
+    const normalized = headers.map(normalize);
+
+    for (const name of preferred) {
+      const i = normalized.indexOf(name);
+      if (i >= 0) return i;
+    }
+
+    return -1;
+  }
+
+  function resetQR() {
+    state.qrRequestId++;
+
+    const container = $("qrCanvas");
+    if (container) {
+      container.innerHTML = "";
+      container.style.display = "none";
+    }
+
+    $("qrPlaceholder").style.display = "grid";
+    $("selectedBill").textContent = "Chưa chọn";
+    $("qrNote").textContent =
+      "Mã QR sẽ được tạo ngay khi bạn chọn một dòng có mã bill.";
+
+    $("downloadBtn").disabled = true;
+    $("printBtn").disabled = true;
+
+    $("billDetails").innerHTML =
+      '<div class="detail-row"><span>Trạng thái</span><span>Chưa chọn bill</span></div>';
+  }
+
+  function renderStats() {
+    $("totalCount").textContent =
+      state.rows.length.toLocaleString("vi-VN");
+
+    $("billCount").textContent = state.rows
+      .filter(r => cellText(r[state.billCol]))
+      .length.toLocaleString("vi-VN");
+
+    $("visibleCount").textContent =
+      state.filtered.length.toLocaleString("vi-VN");
+  }
+
+  function setupColumnSelect() {
+    const select = $("billColumn");
+    select.innerHTML = "";
+
+    state.headers.forEach((h, i) => {
+      const option = document.createElement("option");
+      option.value = String(i);
+      option.textContent =
+        `${h || "Cột " + (i + 1)}${i === state.billCol ? " (gợi ý)" : ""}`;
+      select.appendChild(option);
+    });
+
+    select.disabled = !state.headers.length;
+
+    if (state.billCol >= 0) {
+      select.value = String(state.billCol);
+    }
+
+    $("columnStatus").textContent = state.billCol >= 0
+      ? "Cột QR: " + (state.headers[state.billCol] ||
+          `Cột ${state.billCol + 1}`)
+      : "Chưa chọn cột mã bill";
+  }
+
+  function renderTable() {
+    const query = $("searchInput").value
+      .trim()
+      .toLocaleLowerCase("vi");
+
+    state.filtered = state.rows
+      .map((row, index) => ({ row, index }))
+      .filter(({ row }) =>
+        !query || row.some(cell =>
+          cellText(cell).toLocaleLowerCase("vi").includes(query)
+        )
+      );
+
+    renderStats();
+
+    if (!state.headers.length) {
+      $("tableWrap").innerHTML =
+        '<div class="empty"><div class="emoji">▤</div><strong>Chưa có dữ liệu</strong><br>Hãy tải lên file Excel để bắt đầu tạo QR.</div>';
+
+      $("selectionHint").textContent = "Chưa chọn dòng nào";
+      $("tableHint").textContent = "Hỗ trợ .xlsx, .xls và .csv";
+      return;
+    }
+
+    if (!state.filtered.length) {
+      $("tableWrap").innerHTML =
+        '<div class="empty"><div class="emoji">⌕</div><strong>Không tìm thấy kết quả</strong><br>Thử từ khóa khác.</div>';
+
+      $("selectionHint").textContent = "Không có dòng phù hợp";
+      $("tableHint").textContent = "Không có dữ liệu phù hợp";
+      return;
+    }
+
+    let html = '<table><thead><tr><th class="rownum">#</th>' +
+      state.headers.map((h, i) =>
+        `<th title="${escapeHtml(h)}">${escapeHtml(h || "Cột " + (i + 1))}${i === state.billCol ? " ◈" : ""}</th>`
+      ).join("") +
+      '</tr></thead><tbody>';
+
+    for (const item of state.filtered) {
+      const selected = item.index === state.selectedIndex;
+
+      html += `<tr data-index="${item.index}" class="${selected ? "selected" : ""}">`;
+      html += `<td class="rownum">${item.index + 1}</td>`;
+
+      item.row.forEach((value, i) => {
+        const content = escapeHtml(cellText(value));
+        const label = escapeHtml(state.headers[i] || `Cột ${i + 1}`);
+
+        html += `<td data-label="${label}" class="${i === state.billCol ? "bill-cell" : ""}" title="${content}">${content || '<span style="color:#94a3b8">—</span>'}</td>`;
+      });
+
+      html += "</tr>";
+    }
+
+    html += "</tbody></table>";
+    $("tableWrap").innerHTML = html;
+
+    $("tableWrap").querySelectorAll("tbody tr").forEach(tr => {
+      tr.addEventListener("click", () =>
+        selectRow(Number(tr.dataset.index))
+      );
+    });
+
+    $("selectionHint").textContent = state.selectedIndex >= 0
+      ? `Đang chọn dòng ${state.selectedIndex + 1}`
+      : "Chưa chọn dòng nào";
+
+    $("tableHint").textContent =
+      `Hiển thị ${state.filtered.length} / ${state.rows.length} dòng`;
+  }
+
+  function waitForQR(timeoutMs = 15000) {
+    if (typeof window.QRCode === "function") {
+      return Promise.resolve(true);
+    }
+
+    if (window.__qrFailed) {
+      return Promise.resolve(false);
+    }
+
+    return new Promise(resolve => {
+      let finished = false;
+
+      const finish = result => {
+        if (finished) return;
+        finished = true;
+
+        clearTimeout(timer);
+        document.removeEventListener("qr-ready", onReady);
+        document.removeEventListener("libraries-failed", onFail);
+
+        resolve(result);
+      };
+
+      const onReady = () => {
+        finish(typeof window.QRCode === "function");
+      };
+
+      const onFail = () => {
+        if (window.__qrFailed) finish(false);
+      };
+
+      const timer = setTimeout(() => {
+        finish(typeof window.QRCode === "function");
+      }, timeoutMs);
+
+      document.addEventListener("qr-ready", onReady);
+      document.addEventListener("libraries-failed", onFail);
+
+      if (typeof window.QRCode === "function") {
+        finish(true);
+      }
+    });
+  }
+
+  async function selectRow(index) {
+    if (index < 0 || index >= state.rows.length) return;
+
+    state.selectedIndex = index;
+    renderTable();
+
+    const row = state.rows[index];
+    const bill = state.billCol >= 0
+      ? cellText(row?.[state.billCol])
+      : "";
+
+    if (!bill) {
+      resetQR();
+      $("selectedBill").textContent = "Dòng chưa có mã bill";
+      $("qrNote").textContent =
+        "Dòng này không có giá trị ở cột mã bill.";
+
+      toast("Dòng được chọn không có mã bill.");
+      return;
+    }
+
+    const requestId = ++state.qrRequestId;
+
+    $("selectedBill").textContent = bill;
+    $("qrNote").textContent = "Đang tạo mã QR...";
+    $("downloadBtn").disabled = true;
+    $("printBtn").disabled = true;
+
+    try {
+      const ready = await waitForQR();
+
+      if (requestId !== state.qrRequestId) return;
+
+      if (!ready) {
+        $("qrNote").textContent =
+          "Không tải được thư viện QR. Hãy kiểm tra kết nối Internet.";
+
+        toast("Thư viện QR chưa tải được. Hãy tải lại trang.");
+        console.error("QRCodeJS chưa tải:", window.QRCode);
+        return;
+      }
+
+      const container = $("qrCanvas");
+      container.innerHTML = "";
+      container.style.display = "block";
+
+      new window.QRCode(container, {
+        text: bill,
+        width: 420,
+        height: 420,
+        colorDark: "#111827",
+        colorLight: "#FFFFFF",
+        correctLevel: window.QRCode.CorrectLevel.M
+      });
+
+      $("qrPlaceholder").style.display = "none";
+      $("selectedBill").textContent = bill;
+      $("qrNote").textContent =
+        "Nội dung QR: chính xác mã bill ở trên.";
+
+      $("printBtn").disabled = false;
+
+      $("billDetails").innerHTML = state.headers.map((h, i) =>
+        `<div class="detail-row"><span>${escapeHtml(h || "Cột " + (i + 1))}</span><span title="${escapeHtml(cellText(row[i]))}">${escapeHtml(cellText(row[i]) || "—")}</span></div>`
+      ).join("");
+
+      const downloadQR = () => {
+        if (requestId !== state.qrRequestId) return;
+
+        const qrCanvas = container.querySelector("canvas");
+        const qrImage = container.querySelector("img");
+
+        let dataUrl = "";
+
+        if (qrCanvas) {
+          dataUrl = qrCanvas.toDataURL("image/png");
+        } else if (qrImage && qrImage.complete && qrImage.naturalWidth) {
+          const tempCanvas = document.createElement("canvas");
+          tempCanvas.width = 420;
+          tempCanvas.height = 420;
+
+          const ctx = tempCanvas.getContext("2d");
+          ctx.fillStyle = "#FFFFFF";
+          ctx.fillRect(0, 0, 420, 420);
+          ctx.drawImage(qrImage, 0, 0, 420, 420);
+
+          try {
+            dataUrl = tempCanvas.toDataURL("image/png");
+          } catch (error) {
+            console.error("Không xuất được ảnh QR:", error);
+          }
+        }
+
+        if (!dataUrl) return false;
+
+        const link = document.createElement("a");
+        link.download =
+          `QR-${bill.replace(/[\\/:*?"<>|]/g, "_") || "bill"}.png`;
+        link.href = dataUrl;
+        link.click();
+
+        return true;
+      };
+
+      const checkQR = () => {
+        if (requestId !== state.qrRequestId) return;
+
+        const qrCanvas = container.querySelector("canvas");
+        const qrImage = container.querySelector("img");
+
+        if (qrCanvas || (qrImage && qrImage.complete && qrImage.naturalWidth)) {
+          $("downloadBtn").disabled = false;
+          $("downloadBtn").onclick = downloadQR;
+        }
+      };
+
+      setTimeout(checkQR, 100);
+      setTimeout(checkQR, 500);
+
+    } catch (error) {
+      if (requestId !== state.qrRequestId) return;
+
+      console.error("Lỗi tạo QR:", error);
+      $("qrNote").textContent = "Tạo QR thất bại. Hãy thử chọn lại bill.";
+      toast("Không tạo được QR. Mở F12 → Console để kiểm tra.");
+    }
+  }
+
+  function loadData(headers, rows, filename) {
+    if (!headers.length) {
+      toast("Không tìm thấy hàng tiêu đề trong file.");
+      return;
+    }
+
+    state.headers = headers.map((h, i) =>
+      cellText(h) || `Cột ${i + 1}`
+    );
+
+    state.rows = rows.map(row =>
+      state.headers.map((_, i) => row?.[i] ?? "")
+    );
+
+    state.sourceName = filename || "Dữ liệu mẫu";
+    state.billCol = findBillColumn(state.headers);
+
+    if (state.billCol < 0) state.billCol = 0;
+
+    state.selectedIndex = -1;
+
+    $("fileStatus").textContent = state.sourceName;
+    $("searchInput").disabled = false;
+    $("searchInput").value = "";
+
+    setupColumnSelect();
+    resetQR();
+    renderTable();
+
+    if (findBillColumn(state.headers) < 0) {
+      toast("Chưa nhận diện được cột mã bill. Hãy chọn đúng cột.");
+    } else {
+      toast(`Đã nạp ${state.rows.length} dòng dữ liệu.`);
+    }
+  }
+
+  async function readFile(file) {
+    if (!file) return;
+
+    if (!window.XLSX) {
+      toast("Thư viện Excel chưa sẵn sàng. Hãy tải lại trang.");
+      return;
+    }
+
+    try {
+      const data = await file.arrayBuffer();
+
+      const workbook = window.XLSX.read(data, {
+        type: "array",
+        cellDates: true
+      });
+
+      const first = workbook.SheetNames[0];
+
+      if (!first) {
+        toast("File không có trang tính.");
+        return;
+      }
+
+      const matrix = window.XLSX.utils.sheet_to_json(
+        workbook.Sheets[first],
+        { header: 1, defval: "", raw: false }
+      );
+
+      const nonEmpty = matrix.filter(row =>
+        row.some(v => cellText(v) !== "")
+      );
+
+      if (nonEmpty.length < 2) {
+        toast("File cần có hàng tiêu đề và ít nhất một dòng dữ liệu.");
+        return;
+      }
+
+      loadData(nonEmpty[0], nonEmpty.slice(1), file.name);
+    } catch (error) {
+      console.error("Lỗi đọc Excel:", error);
+      toast("Không đọc được file. Hãy thử lưu lại dạng .xlsx hoặc .csv.");
+    } finally {
+      fileInput.value = "";
+    }
+  }
+
+  fileInput.addEventListener("change", event => {
+    readFile(event.target.files[0]);
+  });
+
+  $("searchInput").addEventListener("input", renderTable);
+
+  $("billColumn").addEventListener("change", event => {
+    state.billCol = Number(event.target.value);
+    state.selectedIndex = -1;
+
+    resetQR();
+
+    $("columnStatus").textContent =
+      "Cột QR: " +
+      (state.headers[state.billCol] || `Cột ${state.billCol + 1}`);
+
+    renderTable();
+    renderStats();
+
+    toast("Đã đổi cột dùng để tạo QR.");
+  });
+
+  $("downloadBtn").addEventListener("click", () => {
+    if (state.selectedIndex < 0 || $("downloadBtn").disabled) return;
+    $("downloadBtn").onclick?.();
+  });
+
+  $("printBtn").addEventListener("click", () => {
+    if (!$("printBtn").disabled) window.print();
+  });
+
+  $("clearBtn").addEventListener("click", () => {
+    state.headers = [];
+    state.rows = [];
+    state.sourceName = "";
+    state.billCol = -1;
+    state.selectedIndex = -1;
+    state.filtered = [];
+
+    $("fileStatus").textContent = "Chưa có file nào được tải lên";
+    $("searchInput").value = "";
+    $("searchInput").disabled = true;
+
+    $("billColumn").innerHTML =
+      '<option value="">Chọn cột mã bill</option>';
+    $("billColumn").disabled = true;
+
+    $("columnStatus").textContent = "Cột QR: chưa xác định";
+    $("tableHint").textContent = "Hỗ trợ .xlsx, .xls và .csv";
+    $("selectionHint").textContent = "Chưa chọn dòng nào";
+
+    resetQR();
+    renderTable();
+    renderStats();
+
+    toast("Đã xóa dữ liệu khỏi phiên làm việc.");
+  });
+
+  $("sampleBtn").addEventListener("click", () => {
+    loadData(
+      ["Mã bill / Mã vận đơn", "Người nhận", "Khu vực", "Trạng thái"],
+      [
+        ["VT001234", "Nguyễn Văn An", "Quận 1", "Đang giao"],
+        ["VT001235", "Trần Thị Bình", "Quận 3", "Chờ phát"],
+        ["VT001236", "Lê Minh Cường", "Thủ Đức", "Đã tiếp nhận"],
+        ["VT001237", "Phạm Thu Hà", "Quận 7", "Đang giao"],
+        ["VT001238", "Đỗ Quốc Huy", "Gò Vấp", "Chờ phát"]
+      ],
+      "Dữ liệu mẫu"
+    );
+  });
+
+  function updateLibraryStatus() {
+    if (window.__qrReady && window.__xlsxReady) {
+      const current = $("fileStatus").textContent;
+
+      if (
+        current.includes("Đang tải thư viện") ||
+        current.includes("Không tải được thư viện")
+      ) {
+        $("fileStatus").textContent =
+          "Thư viện đã sẵn sàng — có thể tải Excel";
+      }
+    }
+  }
+
+  document.addEventListener("qr-ready", updateLibraryStatus);
+  document.addEventListener("xlsx-ready", updateLibraryStatus);
+
+  document.addEventListener("libraries-failed", () => {
+    if (window.__qrFailed || window.__xlsxFailed) {
+      $("fileStatus").textContent =
+        "Không tải được thư viện; hãy kiểm tra CDN hoặc kết nối.";
+
+      toast("Không tải được thư viện. Mở F12 → Console để kiểm tra.");
+    }
+  });
+
+  if (!window.XLSX || !window.QRCode) {
+    $("fileStatus").textContent = "Đang tải thư viện Excel và QR…";
+  }
+
+  resetQR();
+  renderTable();
+  renderStats();
+})();
+
+/* ===== ĐIỀU KHIỂN INTRO BILL QR MANAGER ===== */
+(function () {
+  const intro = document.getElementById("vpostIntro");
+  const startBtn = document.getElementById("vpostIntroStart");
+  const skipBtn = document.getElementById("vpostIntroSkip");
+
+  if (!intro || !startBtn || !skipBtn) return;
+
+  let closed = false;
+
+  function closeIntro() {
+    if (closed) return;
+    closed = true;
+
+    intro.classList.add("intro-exit");
+    intro.setAttribute("aria-hidden", "true");
+
+    // Không xóa phần intro ngay để hiệu ứng chuyển cảnh hoàn tất.
+    window.setTimeout(function () {
+      intro.style.display = "none";
+    }, 600);
+  }
+
+  startBtn.addEventListener("click", closeIntro);
+  skipBtn.addEventListener("click", closeIntro);
+
+  // Nhấn Escape để bỏ qua intro.
+  document.addEventListener("keydown", function (event) {
+    if (!closed && event.key === "Escape") {
+      closeIntro();
+    }
+  });
+
+  // Hỗ trợ người dùng dùng bàn phím để chọn nút.
+  intro.addEventListener("keydown", function (event) {
+    if (event.key === "Enter" &&
+        event.target === intro) {
+      closeIntro();
+    }
+  });
+})();
+
+</script>
+
+
+</body>
+</html>
